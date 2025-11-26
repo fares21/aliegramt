@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: aliexpress-telegram-bot
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn "app.main:create_app()" --bind 0.0.0.0:10000
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      # بقية المتغيرات تُضبط من لوحة Render (القيم لا تضعها في YAML)
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHANNEL_ID
+        sync: false
+      - key: ALI_APP_KEY
+        sync: false
+      - key: ALI_APP_SECRET
+        sync: false
+      - key: ALI_TRACKING_ID
+        sync: false
+      - key: POST_PREFIX_TEXT
+        sync: false
