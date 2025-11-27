@@ -78,7 +78,7 @@ class AliExpressApiClient:
         # يمكن هنا معالجة أخطاء AliExpress (كود خطأ، إلخ)
         return data
 
-    def search_products(
+       def search_products(
         self,
         category_info: Dict[str, Any],
         limit: int = 20,
@@ -87,12 +87,11 @@ class AliExpressApiClient:
     ) -> List[Dict[str, Any]]:
         """
         بحث عن منتجات حسب الفئة/الكلمات المفتاحية.
-        يلفّ حول aliexpress.affiliate.product.query (أو listPromotionProduct). [web:126]
+        يلفّ حول aliexpress.affiliate.product.query (أو listPromotionProduct).
         """
         keywords = category_info.get("keywords")
         category_id = category_info.get("category_id")
 
-        # param names تقريبية؛ عدّلها حسب الدوكيمنت الذي تعمل به
         api_params = {
             "keywords": keywords,
             "page_size": limit,
@@ -105,15 +104,15 @@ class AliExpressApiClient:
         if max_price is not None:
             api_params["max_price"] = max_price
 
-        # مثال method شائع مع affiliate:
-        method_name = "aliexpress.affiliate.product.query"  # أو listPromotionProduct [web:126][web:4]
+        method_name = "aliexpress.affiliate.product.query"
         raw = self._request(method_name, api_params)
 
-        # ستحتاج هنا لقراءة الاستجابة الحقيقية من AliExpress
-        # واستخراج قائمة المنتجات مع الحقول الأساسية.
-        # كمثال مبني على استجابات شائعة: [web:31][web:20]
+        # سطر التشخيص المهم:
+        print("DEBUG ALI RAW:", raw)
+
         items = self._extract_products_from_response(raw)
         return items
+
 
     def _extract_products_from_response(self, raw: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
