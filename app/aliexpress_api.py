@@ -20,8 +20,8 @@ class AliExpressApiClient:
 
     def __init__(
         self,
-        app_key: str = ALI_APP_KEY,
-        app_secret: str = ALI_APP_SECRET,
+        app_key: str = AE_APP_KEY,
+        app_secret: str = AE_APP_SECRET,
         tracking_id: str = ALI_TRACKING_ID,
     ):
         if not app_key or not app_secret:
