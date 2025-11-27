@@ -12,8 +12,8 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID")  # مثال: "@my_channel" أو -1001234567890
 
 # AliExpress Affiliate API
-ALI_APP_KEY = os.getenv("ALI_APP_KEY")
-ALI_APP_SECRET = os.getenv("ALI_APP_SECRET")
+AE_APP_KEY = os.getenv("AE_APP_KEY")
+AE_APP_SECRET = os.getenv("AE_APP_SECRET")
 ALI_TRACKING_ID = os.getenv("ALI_TRACKING_ID")
 
 ALI_API_BASE = "https://api-some-endpoint.aliexpress.com"
