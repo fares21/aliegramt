@@ -33,14 +33,20 @@ class AliExpressApiClient:
         self.app_secret = app_secret
         self.tracking_id = tracking_id
 
-  # ديباغ:
-    print("DEBUG ALI CREDS:", self.app_key, self.app_secret[:4] + "****", self.tracking_id)    
+        # ديباغ: انتبه للإزاحة هنا (نفس مستوى self.app_key)
+        print(
+            "DEBUG ALI CREDS:",
+            self.app_key,
+            (self.app_secret[:4] + "****") if self.app_secret else "NO_SECRET",
+            self.tracking_id,
+        )
 
     def _sign(self, params: Dict[str, Any]) -> str:
         sorted_items = sorted((k, v) for k, v in params.items() if v is not None)
         query = "".join(f"{k}{v}" for k, v in sorted_items)
         sign_str = f"{self.app_secret}{query}{self.app_secret}"
         return hashlib.md5(sign_str.encode("utf-8")).hexdigest().upper()
+
 
     def _build_common_params(self, method: str) -> Dict[str, Any]:
         return {
