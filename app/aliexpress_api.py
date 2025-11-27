@@ -2,7 +2,7 @@ import time
 import hashlib
 import requests
 from typing import Dict, Any, List, Optional
-from .config import ALI_APP_KEY, ALI_APP_SECRET, ALI_TRACKING_ID
+from .config import AE_APP_KEY, AE_APP_SECRET, ALI_TRACKING_ID
 
 ALI_GATEWAY = "https://api.taobao.com/router/rest"
 
