@@ -35,10 +35,10 @@ def create_app():
             title = product.get("title")
             original_price = float(product.get("original_price", 0))
             image_url = product.get("image_url")
-            product_url = product.get("product_url")
+            product_url = product.get("product_url")  # هذا مفروض يكون promotion_link
 
-            # 2) الحصول على رابط أفلييت
-            affiliate_url = ali_client.get_affiliate_link(product_url) or product_url
+            # 2) استخدام رابط الأفلييت كما هو (promotion_link قصير)
+            affiliate_url = product_url
 
             # 3) اختيار كوبون مناسب للسعر
             coupon, final_price = coupon_manager.get_random_coupon_for_price(original_price)
@@ -61,7 +61,8 @@ def create_app():
                 "",
                 f"رابط المنتج: {affiliate_url}",
             ]
-            message_text = "\n".join(lines)
+            message_text = "
+".join(lines)
 
             # 5) إرسال الرسالة إلى تيليجرام
             if image_url:
@@ -75,6 +76,7 @@ def create_app():
             return jsonify({"status": "ok"}), 200
 
         except Exception as e:
+            print("PUBLISH ERROR:", repr(e))
             return jsonify({"status": "error", "message": str(e)}), 500
 
     return app
