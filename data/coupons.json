@@ -5,32 +5,117 @@
       "min_price": 18,
       "max_price": 25,
       "coupons": [
-        { "code": "3OFFA", "discount": 3 },
-        { "code": "3OFFB", "discount": 3 },
-        { "code": "3OFFC", "discount": 3 },
-        { "code": "3OFFD", "discount": 3 }
+        { "code": "AFFDB3", "discount": 3 },
+        { "code": "BL03A", "discount": 3 },
+        { "code": "BL03B", "discount": 3 },
+        { "code": "BL03C", "discount": 3 }
       ]
     },
+
     {
       "name": "RANGE_26_58",
       "min_price": 26,
       "max_price": 58,
       "coupons": [
-        { "code": "4OFFA", "discount": 4 },
-        { "code": "4OFFB", "discount": 4 },
-        { "code": "4OFFC", "discount": 4 },
-        { "code": "4OFFD", "discount": 4 }
+        { "code": "AFFDB4", "discount": 4 },
+        { "code": "BL04", "discount": 4 },
+        { "code": "BL04A", "discount": 4 },
+        { "code": "BL04B", "discount": 4 },
+        { "code": "BL04C", "discount": 4 },
+        { "code": "BL04D", "discount": 4 }
       ]
     },
+
     {
       "name": "RANGE_59_88",
       "min_price": 59,
       "max_price": 88,
       "coupons": [
-        { "code": "9OFFA", "discount": 9 },
-        { "code": "9OFFB", "discount": 9 },
-        { "code": "9OFFC", "discount": 9 },
-        { "code": "9OFFD", "discount": 9 }
+        { "code": "AFFDB9", "discount": 9 },
+        { "code": "BL09", "discount": 9 },
+        { "code": "BL09A", "discount": 9 },
+        { "code": "BL09B", "discount": 9 },
+        { "code": "BL09C", "discount": 9 },
+        { "code": "BL09D", "discount": 9 }
+      ]
+    },
+
+    {
+      "name": "RANGE_89_138",
+      "min_price": 89,
+      "max_price": 138,
+      "coupons": [
+        { "code": "AFFDB15", "discount": 15 },
+        { "code": "BL15", "discount": 15 },
+        { "code": "BL15A", "discount": 15 },
+        { "code": "BL15B", "discount": 15 },
+        { "code": "BL15C", "discount": 15 },
+        { "code": "BL15D", "discount": 15 }
+      ]
+    },
+
+    {
+      "name": "RANGE_139_208",
+      "min_price": 139,
+      "max_price": 208,
+      "coupons": [
+        { "code": "AFFDB20", "discount": 20 },
+        { "code": "BL20A", "discount": 20 },
+        { "code": "BL20B", "discount": 20 },
+        { "code": "BL20C", "discount": 20 }
+      ]
+    },
+
+    {
+      "name": "RANGE_209_278",
+      "min_price": 209,
+      "max_price": 278,
+      "coupons": [
+        { "code": "AFFDB30", "discount": 30 },
+        { "code": "BL30A", "discount": 30 },
+        { "code": "BL30B", "discount": 30 },
+        { "code": "BL30C", "discount": 30 }
+      ]
+    },
+
+    {
+      "name": "RANGE_279_328",
+      "min_price": 279,
+      "max_price": 328,
+      "coupons": [
+        { "code": "AFFDB40", "discount": 40 },
+        { "code": "BL40A", "discount": 40 },
+        { "code": "BL40B", "discount": 40 },
+        { "code": "BL40C", "discount": 40 },
+        { "code": "BL40D", "discount": 40 }
+      ]
+    },
+
+    {
+      "name": "RANGE_329_498",
+      "min_price": 329,
+      "max_price": 498,
+      "coupons": [
+        { "code": "AFFDB50", "discount": 50 },
+        { "code": "BL50", "discount": 50 },
+        { "code": "BL50A", "discount": 50 },
+        { "code": "BL50B", "discount": 50 },
+        { "code": "BL50C", "discount": 50 },
+        { "code": "BL50D", "discount": 50 }
+      ]
+    },
+
+    {
+      "name": "RANGE_499_999",
+      "min_price": 499,
+      "max_price": 999,
+      "coupons": [
+        { "code": "AFFDB70", "discount": 70 },
+        { "code": "BL70", "discount": 70 },
+        { "code": "BL70A", "discount": 70 },
+        { "code": "BL70B", "discount": 70 },
+        { "code": "BL70C", "discount": 70 },
+        { "code": "BL70D", "discount": 70 }
       ]
     }
   ]
