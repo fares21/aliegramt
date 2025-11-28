@@ -125,7 +125,7 @@ class AliExpressApiClient:
         items = self._extract_products_from_response(raw)
         return items
 
-        def _extract_products_from_response(
+    def _extract_products_from_response(
         self, raw: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         products: List[Dict[str, Any]] = []
