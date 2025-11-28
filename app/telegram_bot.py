@@ -101,9 +101,7 @@ class TelegramBot:
 
         # في حالة فشل sendPhoto (مثلاً 400) نحاول إرسال نص بديل بدل إسقاط الحملة
         if not resp.ok:
-            fallback_text = f"{caption}
-
-{photo_url}"
+            fallback_text = f"{caption}{photo_url}"
             try:
                 self.send_text(fallback_text, parse_mode=parse_mode)
             except Exception as e:
