@@ -25,13 +25,12 @@ class TelegramBot:
     def _clean_caption(self, text: str, max_len: int = 1024) -> str:
         """
         تنظيف بسيط للكابشن حتى يناسب HTML وتيليجرام:
-        - قصه لو تجاوزه 1024 حرف (حد تيليجرام للكابشن).
+        - قصه لو تجاوزه max_len (الكابشن حدّه 1024).
         - حذف أو استبدال المحارف التي قد تكسر HTML.
         """
         if not text:
             return ""
 
-        # قص الطول
         text = text.strip()
         if len(text) > max_len:
             text = text[: max_len - 3] + "..."
@@ -53,6 +52,7 @@ class TelegramBot:
 
         # تنظيف النص إذا كنا نستخدم HTML
         if parse_mode == "HTML":
+            # الحد الأقصى للرسالة النصية 4096
             text = self._clean_caption(text, max_len=4096)
 
         payload = {
@@ -99,9 +99,8 @@ class TelegramBot:
         except Exception:
             pass
 
-        # لو فشل sendPhoto (400 مثلاً)، أرسل نص فقط بدل الصورة حتى لا تضيع الحملة
+        # في حالة فشل sendPhoto (مثلاً 400) نحاول إرسال نص بديل بدل إسقاط الحملة
         if not resp.ok:
-            # محاولة إرسال نص بديل مع الرابط
             fallback_text = f"{caption}
 
 {photo_url}"
