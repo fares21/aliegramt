@@ -1,10 +1,13 @@
+import os
 import time
 import hashlib
+import hmac
 import requests
 from typing import Dict, Any, List, Optional
 from .config import AE_APP_KEY, AE_APP_SECRET, ALI_TRACKING_ID
 
-ALI_GATEWAY = "https://api.taobao.com/router/rest"
+ALI_GATEWAY = "https://api-sg.aliexpress.com/sync"
+ALI_ACCESS_TOKEN = os.getenv("ALI_ACCESS_TOKEN")
 
 
 class AliExpressApiError(Exception):
@@ -13,9 +16,7 @@ class AliExpressApiError(Exception):
 
 class AliExpressApiClient:
     """
-    عميل مبسط لـ AliExpress Affiliate API.
-    - search_products: يستخدم aliexpress.affiliate.product.query أو ما يشبهه.
-    - get_affiliate_link: يحول productUrl إلى promotionUrl.
+    عميل مبسط لـ AliExpress Affiliate API (البيئة الجديدة api-sg + OAuth).
     """
 
     def __init__(
@@ -28,12 +29,14 @@ class AliExpressApiClient:
             raise ValueError("AliExpress APP_KEY/APP_SECRET not configured")
         if not tracking_id:
             raise ValueError("ALI_TRACKING_ID is not set")
+        if not ALI_ACCESS_TOKEN:
+            raise ValueError("ALI_ACCESS_TOKEN env var is not set")
 
         self.app_key = app_key
         self.app_secret = app_secret
         self.tracking_id = tracking_id
+        self.access_token = ALI_ACCESS_TOKEN
 
-        # ديباغ: انتبه للإزاحة هنا (نفس مستوى self.app_key)
         print(
             "DEBUG ALI CREDS:",
             self.app_key,
@@ -41,21 +44,40 @@ class AliExpressApiClient:
             self.tracking_id,
         )
 
-    def _sign(self, params: Dict[str, Any]) -> str:
-        sorted_items = sorted((k, v) for k, v in params.items() if v is not None)
-        query = "".join(f"{k}{v}" for k, v in sorted_items)
-        sign_str = f"{self.app_secret}{query}{self.app_secret}"
-        return hashlib.md5(sign_str.encode("utf-8")).hexdigest().upper()
+    # ---------- توقيع Business Interface (Case 1) ----------
 
+    def _sign(self, params: Dict[str, Any]) -> str:
+        """
+        Signature algorithm (Business Interface):
+        1) sort all params by name (ASCII), excluding sign and None
+        2) concat key+value
+        3) HMAC-SHA256(concatenated, app_secret) -> HEX UPPER
+        """
+        items = [
+            (k, v) for k, v in params.items()
+            if v is not None and k != "sign"
+        ]
+        items.sort(key=lambda x: x[0])
+
+        concatenated = "".join(f"{k}{v}" for k, v in items)
+
+        digest = hmac.new(
+            self.app_secret.encode("utf-8"),
+            concatenated.encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest().upper()
+
+        return digest
 
     def _build_common_params(self, method: str) -> Dict[str, Any]:
+        # Business Interfaces
+        timestamp = int(time.time() * 1000)  # ms
         return {
             "app_key": self.app_key,
+            "access_token": self.access_token,
+            "timestamp": timestamp,
+            "sign_method": "sha256",
             "method": method,
-            "format": "json",
-            "sign_method": "md5",
-            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-            "v": "2.0",
         }
 
     def _request(self, method: str, api_params: Dict[str, Any]) -> Dict[str, Any]:
@@ -63,15 +85,17 @@ class AliExpressApiClient:
         params.update(api_params)
         params["sign"] = self._sign(params)
 
-        resp = requests.post(
+        resp = requests.get(
             ALI_GATEWAY,
-            data=params,
-            headers={"Content-Type": "application/x-www-form-urlencoded;charset=utf-8"},
+            params=params,
             timeout=20,
         )
         resp.raise_for_status()
         data = resp.json()
+        print("DEBUG ALI RAW:", data)
         return data
+
+    # ---------- دوال العمل ----------
 
     def search_products(
         self,
@@ -80,9 +104,6 @@ class AliExpressApiClient:
         min_price: Optional[float] = None,
         max_price: Optional[float] = None,
     ) -> List[Dict[str, Any]]:
-        """
-        بحث عن منتجات حسب الفئة/الكلمات المفتاحية.
-        """
         keywords = category_info.get("keywords")
         category_id = category_info.get("category_id")
 
@@ -100,8 +121,6 @@ class AliExpressApiClient:
 
         method_name = "aliexpress.affiliate.product.query"
         raw = self._request(method_name, api_params)
-
-        print("DEBUG ALI RAW:", raw)  # تشخيص
 
         items = self._extract_products_from_response(raw)
         return items
