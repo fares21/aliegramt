@@ -28,16 +28,6 @@ POST_PREFIX_TEXT = os.getenv(
 )
 
 PRODUCT_CATEGORIES = [
-    {
-        "name": "phones",
-        "keywords": "smartphone mobile phone",
-        "category_id": None
-    },
-    {
-        "name": "pc_accessories",
-        "keywords": "laptop accessories computer accessories",
-        "category_id": None
-    }
+    {"name": "هواتف", "keywords": "smartphone mobile phone"},
 ]
-
 ALI_PRODUCTS_FETCH_LIMIT = 20
