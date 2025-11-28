@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from .config import POST_PREFIX_TEXT
 from .coupons import CouponManager
 from .telegram_bot import TelegramBot
@@ -17,6 +17,12 @@ def create_app():
     @app.route("/health", methods=["GET"])
     def health():
         return jsonify({"status": "ok"}), 200
+
+    @app.route("/ali-callback", methods=["GET"])
+    def ali_callback():
+        code = request.args.get("code")
+        print("ALI OAUTH CODE:", code)
+        return jsonify({"status": "ok", "code": code}), 200
 
     @app.route("/publish", methods=["GET"])
     def publish():
@@ -69,12 +75,6 @@ def create_app():
             return jsonify({"status": "ok"}), 200
 
         except Exception as e:
-            # يمكنك تحسين اللوغ هنا
             return jsonify({"status": "error", "message": str(e)}), 500
 
     return app
-
-
-if __name__ == "__main__":
-    app = create_app()
-    app.run(host="0.0.0.0", port=5000)
