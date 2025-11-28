@@ -125,30 +125,49 @@ class AliExpressApiClient:
         items = self._extract_products_from_response(raw)
         return items
 
-    def _extract_products_from_response(self, raw: Dict[str, Any]) -> List[Dict[str, Any]]:
+      def _extract_products_from_response(self, raw: Dict[str, Any]) -> List[Dict[str, Any]]:
         products: List[Dict[str, Any]] = []
+
+        # لو الـ raw جاء كسلسلة JSON، حوّله إلى dict
+        if isinstance(raw, str):
+            try:
+                import json
+                raw = json.loads(raw)
+            except Exception:
+                return []
+
         try:
             resp = raw.get("aliexpress_affiliate_product_query_response", {})
             resp_result = resp.get("resp_result", {})
             result = resp_result.get("result", {})
-            items = result.get("products", [])
+            products_node = result.get("products", {})
         except AttributeError:
+            return []
+
+        # products يمكن أن تكون قائمة أو dict فيه key "product"
+        if isinstance(products_node, list):
+            items = products_node
+        elif isinstance(products_node, dict):
+            items = products_node.get("product", []) or []
+        else:
             items = []
 
         for item in items:
-            product = {
-                "id": item.get("product_id") or item.get("productId"),
-                "title": item.get("product_title") or item.get("productTitle"),
-                "original_price": self._extract_price(item),
-                "image_url": item.get("product_main_image_url")
-                or item.get("imageUrl")
-                or (item.get("allImageUrls") or "").split("|")[0],
-                "product_url": item.get("product_detail_url") or item.get("productUrl"),
-            }
-            if product["id"] and product["title"] and product["product_url"]:
-                products.append(product)
+            if isinstance(item, dict):
+                product = {
+                    "id": item.get("product_id") or item.get("productId"),
+                    "title": item.get("product_title") or item.get("productTitle"),
+                    "original_price": self._extract_price(item),
+                    "image_url": item.get("product_main_image_url")
+                    or item.get("imageUrl")
+                    or (item.get("allImageUrls") or "").split("|")[0],
+                    "product_url": item.get("product_detail_url") or item.get("productUrl"),
+                }
+                if product["id"] and product["title"] and product["product_url"]:
+                    products.append(product)
 
         return products
+
 
     def _extract_price(self, item: Dict[str, Any]) -> float:
         price_fields = [
