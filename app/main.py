@@ -61,8 +61,7 @@ def create_app():
                 "",
                 f"رابط المنتج: {affiliate_url}",
             ]
-            message_text = "
-".join(lines)
+            message_text = "".join(lines)
 
             # 5) إرسال الرسالة إلى تيليجرام
             if image_url:
