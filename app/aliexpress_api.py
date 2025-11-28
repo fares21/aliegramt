@@ -155,20 +155,27 @@ class AliExpressApiClient:
             items = []
 
         for item in items:
-            if isinstance(item, dict):
-                product = {
-                    "id": item.get("product_id") or item.get("productId"),
-                    "title": item.get("product_title") or item.get("productTitle"),
-                    "original_price": self._extract_price(item),
-                    "image_url": (
-                        item.get("product_main_image_url")
-                        or item.get("imageUrl")
-                        or (item.get("allImageUrls") or "").split("|")[0]
-                    ),
-                    "product_url": item.get("product_detail_url") or item.get("productUrl"),
-                }
-                if product["id"] and product["title"] and product["product_url"]:
-                    products.append(product)
+    if isinstance(item, dict):
+        product = {
+            "id": item.get("product_id") or item.get("productId"),
+            "title": item.get("product_title") or item.get("productTitle"),
+            "original_price": self._extract_price(item),
+            "image_url": (
+                item.get("product_main_image_url")
+                or item.get("imageUrl")
+                or (item.get("allImageUrls") or "").split("|")[0]
+            ),
+            # استخدم promotion_link كرابط المنتج الأساسي
+            "product_url": (
+                item.get("promotion_link")
+                or item.get("promotionLink")
+                or item.get("product_detail_url")
+                or item.get("productUrl")
+            ),
+        }
+        if product["id"] and product["title"] and product["product_url"]:
+            products.append(product)
+
 
         return products
 
