@@ -125,7 +125,9 @@ class AliExpressApiClient:
         items = self._extract_products_from_response(raw)
         return items
 
-      def _extract_products_from_response(self, raw: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _extract_products_from_response(
+        self, raw: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         products: List[Dict[str, Any]] = []
 
         # لو الـ raw جاء كسلسلة JSON، حوّله إلى dict
@@ -158,16 +160,17 @@ class AliExpressApiClient:
                     "id": item.get("product_id") or item.get("productId"),
                     "title": item.get("product_title") or item.get("productTitle"),
                     "original_price": self._extract_price(item),
-                    "image_url": item.get("product_main_image_url")
-                    or item.get("imageUrl")
-                    or (item.get("allImageUrls") or "").split("|")[0],
+                    "image_url": (
+                        item.get("product_main_image_url")
+                        or item.get("imageUrl")
+                        or (item.get("allImageUrls") or "").split("|")[0]
+                    ),
                     "product_url": item.get("product_detail_url") or item.get("productUrl"),
                 }
                 if product["id"] and product["title"] and product["product_url"]:
                     products.append(product)
 
         return products
-
 
     def _extract_price(self, item: Dict[str, Any]) -> float:
         price_fields = [
