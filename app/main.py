@@ -35,15 +35,18 @@ def create_app():
             title = product.get("title")
             original_price = float(product.get("original_price", 0))
             image_url = product.get("image_url")
-            
-            # 2) الحصول على الرابط المختصر - الإصلاح هنا
-            promotion_link = product.get("promotion_link")
             product_url = product.get("product_url")
             
-            # استخدام الرابط المختصر إذا وجد، وإلا استخدام الرابط العادي
-            affiliate_url = promotion_link if promotion_link else product_url
+            # 2) الإصلاح الحقيقي: إنشاء رابط مختصر جديد
+            print(f"🔗 الرابط الأصلي: {product_url}")
             
-            print(f"🔗 الرابط المستخدم: {'مختصر' if promotion_link else 'طويل'} - {affiliate_url}")
+            # استخدام AliExpress API لإنشاء رابط تابع مختصر
+            affiliate_url = ali_client.generate_affiliate_link(product_url)
+            
+            if affiliate_url == product_url:
+                print("❌ فشل في إنشاء رابط مختصر، استخدام الرابط الأصلي")
+            else:
+                print(f"✅ تم إنشاء رابط مختصر: {affiliate_url}")
 
             # 3) اختيار كوبون مناسب للسعر
             coupon, final_price = coupon_manager.get_random_coupon_for_price(original_price)
@@ -60,9 +63,9 @@ def create_app():
             # 4) بناء نص الرسالة (مع أسطر جديدة)
             lines = [
                 f"{POST_PREFIX_TEXT}: {title}",
-                f"السعر الأصلي: {original_price:.2f} دولار",
+                f"💰 السعر الأصلي: {original_price:.2f} دولار",
                 coupon_text,
-                f"السعر بعد الخصم: {final_price_value:.2f} دولار",
+                f"💵 السعر بعد الخصم: {final_price_value:.2f} دولار",
                 "",
                 f"🛒 رابط المنتج: {affiliate_url}",
                 "",
@@ -81,12 +84,35 @@ def create_app():
 
             return jsonify({
                 "status": "ok", 
-                "has_promotion_link": bool(promotion_link),
-                "link_type": "short" if promotion_link else "long"
+                "original_url": product_url,
+                "affiliate_url": affiliate_url,
+                "is_shortened": affiliate_url != product_url,
+                "message": "تم النشر بنجاح" if affiliate_url != product_url else "تم النشر ولكن الرابط لم يتم تقصيره"
             }), 200
 
         except Exception as e:
             print("PUBLISH ERROR:", repr(e))
             return jsonify({"status": "error", "message": str(e)}), 500
+
+    # إضافة نقطة نهاية جديدة لاختبار تقصير الروابط
+    @app.route("/test-shorten", methods=["GET"])
+    def test_shorten():
+        """اختبار تقصير الروابط"""
+        test_url = request.args.get("url", "https://www.aliexpress.com/item/1005001234567890.html")
+        
+        try:
+            short_url = ali_client.generate_affiliate_link(test_url)
+            
+            return jsonify({
+                "original_url": test_url,
+                "short_url": short_url,
+                "is_shortened": short_url != test_url,
+                "length_original": len(test_url),
+                "length_short": len(short_url),
+                "success": short_url != test_url
+            })
+            
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
     return app
