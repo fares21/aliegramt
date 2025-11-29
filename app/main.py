@@ -35,9 +35,9 @@ def create_app():
             title = product.get("title")
             original_price = float(product.get("original_price", 0))
             image_url = product.get("image_url")
-            product_url = product.get("product_url")  # هذا مفروض يكون promotion_link
+            product_url = product.get("product_url")  # مفروض promotion_link
 
-            # 2) استخدام رابط الأفلييت كما هو (promotion_link قصير)
+            # 2) استخدام رابط الأفلييت كما هو (قصير من AliExpress)
             affiliate_url = product_url
 
             # 3) اختيار كوبون مناسب للسعر
@@ -52,7 +52,7 @@ def create_app():
                 coupon_text = f"الكوبون المستخدم: {code} (خصم {discount} دولار)"
                 final_price_value = final_price
 
-            # 4) بناء نص الرسالة
+            # 4) بناء نص الرسالة (مع أسطر جديدة)
             lines = [
                 f"{POST_PREFIX_TEXT}: {title}",
                 f"السعر الأصلي: {original_price:.2f} دولار",
