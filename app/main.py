@@ -35,10 +35,15 @@ def create_app():
             title = product.get("title")
             original_price = float(product.get("original_price", 0))
             image_url = product.get("image_url")
-            product_url = product.get("product_url")  # مفروض promotion_link
-
-            # 2) استخدام رابط الأفلييت كما هو (قصير من AliExpress)
-            affiliate_url = product_url
+            
+            # 2) الحصول على الرابط المختصر - الإصلاح هنا
+            promotion_link = product.get("promotion_link")
+            product_url = product.get("product_url")
+            
+            # استخدام الرابط المختصر إذا وجد، وإلا استخدام الرابط العادي
+            affiliate_url = promotion_link if promotion_link else product_url
+            
+            print(f"🔗 الرابط المستخدم: {'مختصر' if promotion_link else 'طويل'} - {affiliate_url}")
 
             # 3) اختيار كوبون مناسب للسعر
             coupon, final_price = coupon_manager.get_random_coupon_for_price(original_price)
@@ -59,9 +64,11 @@ def create_app():
                 coupon_text,
                 f"السعر بعد الخصم: {final_price_value:.2f} دولار",
                 "",
-                f"رابط المنتج: {affiliate_url}",
+                f"🛒 رابط المنتج: {affiliate_url}",
+                "",
+                "#عروض_AliExpress 🎯"
             ]
-            message_text = "".join(lines)
+            message_text = "\n".join(lines)
 
             # 5) إرسال الرسالة إلى تيليجرام
             if image_url:
@@ -72,7 +79,11 @@ def create_app():
             else:
                 telegram_bot.send_text(text=message_text)
 
-            return jsonify({"status": "ok"}), 200
+            return jsonify({
+                "status": "ok", 
+                "has_promotion_link": bool(promotion_link),
+                "link_type": "short" if promotion_link else "long"
+            }), 200
 
         except Exception as e:
             print("PUBLISH ERROR:", repr(e))
