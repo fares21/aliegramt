@@ -40,7 +40,7 @@ class AliExpressApiClient:
         print(
             "DEBUG ALI CREDS:",
             self.app_key,
-            (self.app_secret[:4] + "****") if self.app_secret else "NO_SECRET",
+            (self.app_secret[:4] + '****') if self.app_secret else "NO_SECRET",
             self.tracking_id,
         )
 
@@ -165,7 +165,7 @@ class AliExpressApiClient:
                         or item.get("imageUrl")
                         or (item.get("allImageUrls") or "").split("|")[0]
                     ),
-                    # استخدم promotion_link كرابط المنتج الأساسي
+                    # نحاول أولاً أخذ promotion_link، ثم نرجع إلى رابط المنتج العادي
                     "product_url": (
                         item.get("promotion_link")
                         or item.get("promotionLink")
@@ -173,6 +173,7 @@ class AliExpressApiClient:
                         or item.get("productUrl")
                     ),
                 }
+                print("ONE PRODUCT:", product)  # للتشخيص
                 if product["id"] and product["title"] and product["product_url"]:
                     products.append(product)
 
