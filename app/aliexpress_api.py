@@ -251,7 +251,7 @@ class AliExpressApiClient:
                 promotion_links = promotion_links.get("promotion_link", []) or promotion_links
 
             if not promotion_links:
-                print("❌ لم يتم إنشاء رابط مختصر - باستخدام الرابط الأصلي")
+                print("❌ لم يتم إنشاء رابط مختصر - استخدام الرابط الأصلي")
                 return product_url
 
             link_info = promotion_links[0] if isinstance(promotion_links, list) else promotion_links
@@ -271,3 +271,24 @@ class AliExpressApiClient:
         except Exception as e:
             print(f"❌ Error generating affiliate link: {e}")
             return product_url
+
+    def ensure_short_link(self, product: Dict[str, Any]) -> Optional[str]:
+        """
+        يتأكد من وجود رابط أفلييت مختصر للمنتج:
+        - إن وُجد promotion_link في المنتج يستخدمه مباشرة.
+        - إن لم يوجد، يولّد رابط مختصر عبر get_affiliate_link.
+        - إن فشل كل شيء، يرجع للرابط الأصلي.
+        """
+        promotion_link = product.get("promotion_link")
+        if promotion_link:
+            return promotion_link
+
+        product_url = product.get("product_url")
+        if not product_url:
+            return None
+
+        short_link = self.get_affiliate_link(product_url)
+        if short_link and short_link != product_url:
+            return short_link
+
+        return product_url
