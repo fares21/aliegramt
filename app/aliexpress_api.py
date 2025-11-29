@@ -40,7 +40,7 @@ class AliExpressApiClient:
         print(
             "DEBUG ALI CREDS:",
             self.app_key,
-            (self.app_secret[:4] + '****') if self.app_secret else "NO_SECRET",
+            (self.app_secret[:4] + "****") if self.app_secret else "NO_SECRET",
             self.tracking_id,
         )
 
@@ -104,6 +104,10 @@ class AliExpressApiClient:
         min_price: Optional[float] = None,
         max_price: Optional[float] = None,
     ) -> List[Dict[str, Any]]:
+        """
+        بحث عن منتجات حسب الكلمات المفتاحية/الفئة وإرجاع لائحة منتجات
+        مع محاولة تضمين promotion_link إن وجد.
+        """
         keywords = category_info.get("keywords")
         category_id = category_info.get("category_id")
 
@@ -128,9 +132,13 @@ class AliExpressApiClient:
     def _extract_products_from_response(
         self, raw: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
+        """
+        استخراج المنتجات من استجابة aliexpress.affiliate.product.query،
+        مع تفضيل promotion_link كرابط أفلييت قصير إن وجد.
+        """
         products: List[Dict[str, Any]] = []
 
-        # لو الـ raw جاء كسلسلة JSON، حوّله إلى dict
+        # لو raw جاء كسلسلة JSON، حوّله إلى dict
         if isinstance(raw, str):
             try:
                 import json
@@ -155,27 +163,47 @@ class AliExpressApiClient:
             items = []
 
         for item in items:
-            if isinstance(item, dict):
-                product = {
-                    "id": item.get("product_id") or item.get("productId"),
-                    "title": item.get("product_title") or item.get("productTitle"),
-                    "original_price": self._extract_price(item),
-                    "image_url": (
-                        item.get("product_main_image_url")
-                        or item.get("imageUrl")
-                        or (item.get("allImageUrls") or "").split("|")[0]
-                    ),
-                    # نحاول أولاً أخذ promotion_link، ثم نرجع إلى رابط المنتج العادي
-                    "product_url": (
-                        item.get("promotion_link")
-                        or item.get("promotionLink")
-                        or item.get("product_detail_url")
-                        or item.get("productUrl")
-                    ),
-                }
-                print("ONE PRODUCT:", product)  # للتشخيص
-                if product["id"] and product["title"] and product["product_url"]:
-                    products.append(product)
+            if not isinstance(item, dict):
+                continue
+
+            # أولوية للرابط المختصر لو أعاده الـ API
+            promotion_link = (
+                item.get("promotion_link")
+                or item.get("promotionLink")
+                or item.get("promotion_url")
+            )
+
+            product_url = (
+                promotion_link
+                or item.get("product_detail_url")
+                or item.get("productUrl")
+                or item.get("product_url")
+            )
+
+            product = {
+                "id": item.get("product_id") or item.get("productId"),
+                "title": item.get("product_title") or item.get("productTitle"),
+                "original_price": self._extract_price(item),
+                "image_url": (
+                    item.get("product_main_image_url")
+                    or item.get("imageUrl")
+                    or (item.get("allImageUrls") or "").split("|")[0]
+                ),
+                # هذا الذي سيُستخدم في الرسائل
+                "product_url": product_url,
+                # حفظ promotion_link منفصلًا لو أردنا التحقق منه أو تفضيله
+                "promotion_link": promotion_link,
+            }
+
+            print(
+                "DEBUG PRODUCT:",
+                "ID=", product["id"],
+                "| HasPromotion=", bool(promotion_link),
+                "| URL=", product_url,
+            )
+
+            if product["id"] and product["title"] and product["product_url"]:
+                products.append(product)
 
         return products
 
@@ -197,22 +225,49 @@ class AliExpressApiClient:
         return 0.0
 
     def get_affiliate_link(self, product_url: str) -> Optional[str]:
-        api_params = {
-            "tracking_id": self.tracking_id,
-            "urls": product_url,
-        }
-        method_name = "aliexpress.affiliate.link.generate"
-        raw = self._request(method_name, api_params)
-
+        """
+        توليد رابط أفلييت مختصر لمنتج معيّن باستخدام
+        aliexpress.affiliate.link.generate
+        """
         try:
+            api_params = {
+                "tracking_id": self.tracking_id,
+                "urls": product_url,
+            }
+
+            method_name = "aliexpress.affiliate.link.generate"
+            raw = self._request(method_name, api_params)
+
+            print(f"DEBUG AFFILIATE RESPONSE: {raw}")
+
             resp = raw.get("aliexpress_affiliate_link_generate_response", {})
-            links = resp.get("resp_result", {}).get("result", {}).get("promotion_links", [])
-        except AttributeError:
-            links = []
+            resp_result = resp.get("resp_result", {})
+            result = resp_result.get("result", {})
 
-        if not links:
-            return None
+            promotion_links = result.get("promotion_links", [])
 
-        link_info = links[0]
-        promo_url = link_info.get("promotion_url") or link_info.get("promotionUrl")
-        return promo_url or product_url
+            # بعض الأحيان يكون dict بدل list
+            if isinstance(promotion_links, dict):
+                promotion_links = promotion_links.get("promotion_link", []) or promotion_links
+
+            if not promotion_links:
+                print("❌ لم يتم إنشاء رابط مختصر - باستخدام الرابط الأصلي")
+                return product_url
+
+            link_info = promotion_links[0] if isinstance(promotion_links, list) else promotion_links
+            promo_url = (
+                link_info.get("promotion_url")
+                or link_info.get("promotion_link")
+                or link_info.get("promotionUrl")
+            )
+
+            if promo_url:
+                print(f"✅ تم إنشاء رابط مختصر: {promo_url}")
+                return promo_url
+
+            print("❌ لم يتم العثور على promotion_url في الاستجابة - استخدام الرابط الأصلي")
+            return product_url
+
+        except Exception as e:
+            print(f"❌ Error generating affiliate link: {e}")
+            return product_url
